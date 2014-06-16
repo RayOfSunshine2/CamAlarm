@@ -5,7 +5,7 @@ import CamController
 urllib.FancyURLopener.prompt_user_passwd = lambda *a, **k: (None, None) # Disable urlopen's password prompt (Dumb!)
 
 class MJPGCamController(CamController.CamController):
-    def __init__(self,maker,model,ip_address,port,user,password,alarm):
+    def __init__(self,maker,model,ip_address,port,user,password,alarm,max_retries):
         self.maker=maker
         self.model=model
         self.ip_address=ip_address
@@ -13,6 +13,7 @@ class MJPGCamController(CamController.CamController):
         self.user=user
         self.password=password
         self.alarm=alarm
+        self.max_retries = max_retries
         self.base_url="http://" + self.ip_address + ":" + self.port + "/"
         
         if not self.isAdmin():
@@ -68,25 +69,34 @@ class MJPGCamController(CamController.CamController):
         result=urllib.urlopen(url).read()
         result=result.strip()
         if result != "ok.":
-            raise CamController.CamControllerError(result,inspect.stack()[0][3])
+            raise CamController.CamControllerError(result,inspect.stack()[0][3],self.ip_address)
         return
         
     def __sendURL(self,url):
-        try:
-            f=urllib.urlopen(url)
+        tries =0
+        success = False
+        while tries<=self.max_retries:
+            try:
+                f=urllib.urlopen(url)
+            except IOError as e:
+                tries += 1
+                continue
+            success = True
+            break
 
-            if f.getcode()!=200:
-                raise CamController.CamControllerError("Bad HTTP Response from Camera",f.getcode(),inspect.stack()[0][3])
-    
-            lines=[]
-            for line in f:            
-                lines.append(line.strip())
-            f.close()
-            
-            if lines[0].find("var") < 0:
-                raise CamController.CamControllerError("".join(lines),inspect.stack()[0][3])
-        except IOError as e:
-            raise CamController.CamControllerError(e.args)
+        if not success:
+            raise CamController.CamControllerError(e.args,url)
+
+        if f.getcode()!=200:
+            raise CamController.CamControllerError("Bad HTTP Response from Camera",f.getcode(),inspect.stack()[0][3],url)
+
+        lines=[]
+        for line in f:            
+            lines.append(line.strip())
+        f.close()
+        
+        if lines[0].find("var") < 0:
+            raise CamController.CamControllerError("".join(lines),inspect.stack()[0][3],url)
 
         return self.__parseLines(lines)
         

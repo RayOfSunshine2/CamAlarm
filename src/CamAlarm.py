@@ -53,6 +53,7 @@ if __name__ == "__main__":
     root=tree.getroot()
     
     test_freq = int(root.find('test_freq').text)
+    max_retries = int(root.find('max_retries').text)
     cams_element = root.find('cams')
     cams = []
     for cam_element in cams_element.findall('cam'):
@@ -63,7 +64,7 @@ if __name__ == "__main__":
         user=cam_element.find('user').text
         password=cam_element.find('password').text
         alarm=cam_element.find('alarm').text
-        cams.append(CamControllerFactory.createCamController(maker,model, ip_address, port, user, password,alarm))
+        cams.append(CamControllerFactory.createCamController(maker,model, ip_address, port, user, password,alarm, max_retries))
     
     alarm_element = root.find('alarm')
     alarm_user = alarm_element.find('user').text
