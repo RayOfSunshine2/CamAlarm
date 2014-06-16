@@ -53,7 +53,7 @@ if __name__ == "__main__":
     root=tree.getroot()
     
     test_freq = int(root.find('test_freq').text)
-    max_retries = int(root.find('max_retries').text)
+    CamControllerFactory.MAX_RETRIES = int(root.find('max_retries').text)
     cams_element = root.find('cams')
     cams = []
     for cam_element in cams_element.findall('cam'):
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         user=cam_element.find('user').text
         password=cam_element.find('password').text
         alarm=cam_element.find('alarm').text
-        cams.append(CamControllerFactory.createCamController(maker,model, ip_address, port, user, password,alarm, max_retries))
+        cams.append(CamControllerFactory.createCamController(maker,model, ip_address, port, user, password,alarm))
     
     alarm_element = root.find('alarm')
     alarm_user = alarm_element.find('user').text
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     alarmChecker = AlarmDotComEmail(alarm_user,alarm_password,alarm_log_file)
 
     alarm_state = alarmChecker.getCurAlarmState()
-    #alarm_state = "DISARMED"
+    alarm_state = "DISARMED"
     
     last_tests = read_last_ts(cams)
     current_hour = hrs_since_epoch()

@@ -5,7 +5,7 @@ import CamController
 urllib.FancyURLopener.prompt_user_passwd = lambda *a, **k: (None, None) # Disable urlopen's password prompt (Dumb!)
 
 class MJPGCamController(CamController.CamController):
-    def __init__(self,maker,model,ip_address,port,user,password,alarm,max_retries):
+    def __init__(self,maker,model,ip_address,port,user,password,alarm):
         self.maker=maker
         self.model=model
         self.ip_address=ip_address
@@ -13,7 +13,6 @@ class MJPGCamController(CamController.CamController):
         self.user=user
         self.password=password
         self.alarm=alarm
-        self.max_retries = max_retries
         self.base_url="http://" + self.ip_address + ":" + self.port + "/"
         
         if not self.isAdmin():
@@ -75,7 +74,7 @@ class MJPGCamController(CamController.CamController):
     def __sendURL(self,url):
         tries =0
         success = False
-        while tries<=self.max_retries:
+        while tries<=CamController.MAX_RETRIES:
             try:
                 f=urllib.urlopen(url)
             except IOError as e:

@@ -6,13 +6,16 @@ import inspect
 
 ALARM_TYPES = {'NEVER':1,'ALWAYS':1,'STAY':1,'AWAY':1}
 
+MAX_RETRIES=0
+CamController.MAX_RETRIES=MAX_RETRIES
+
 class CamControllerFactoryError(Exception):
     pass
         
 class CamControllerFactory:
 
     @staticmethod
-    def createCamController(maker,model,ip_address,port,user,password,alarm, max_retries):
+    def createCamController(maker,model,ip_address,port,user,password,alarm):
         alarm=alarm.upper()
         if alarm not in ALARM_TYPES:
             raise CamControllerFactoryError('Unrecognized Alarm Type: '+alarm)
@@ -22,7 +25,7 @@ class CamControllerFactory:
             for (sup_maker,sup_model) in cls.getSupportedModels():
                 # returns first match, probably should make sure there isn't more than one
                 if maker.upper()==sup_maker.upper() and model.upper()==sup_model.upper():
-                    return cls(maker,model,ip_address,port,user,password,alarm, max_retries)
+                    return cls(maker,model,ip_address,port,user,password,alarm)
             
         
                 
