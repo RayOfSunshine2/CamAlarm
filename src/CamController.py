@@ -1,6 +1,8 @@
 import abc
 abstractstaticmethod = abc.abstractmethod
 
+TIME_OUT = 30
+
 class CamControllerError(Exception):
     pass
         

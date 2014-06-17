@@ -77,7 +77,7 @@ class MJPGCamController(CamController.CamController):
         success = False
         while tries<=self.max_retries:
             try:
-                f=urllib2.urlopen(url)
+                f=urllib2.urlopen(url,None,CamController.TIME_OUT)
             except IOError as e:
                 tries += 1
                 continue
@@ -85,10 +85,10 @@ class MJPGCamController(CamController.CamController):
             break
 
         if not success:
-            raise CamController.CamControllerError(e.args,url)
+            raise CamController.CamControllerError(e.args,inspect.stack()[1][3],self.ip_address)
 
         if f.getcode()!=200:
-            raise CamController.CamControllerError("Bad HTTP Response from Camera",f.getcode(),inspect.stack()[0][3],url)
+            raise CamController.CamControllerError("Bad HTTP Response from Camera",f.getcode(),inspect.stack()[1][3],self.ip_address)
 
         lines=[]
         for line in f:            
@@ -96,7 +96,7 @@ class MJPGCamController(CamController.CamController):
         f.close()
         
         if lines[0].find("var") < 0:
-            raise CamController.CamControllerError("".join(lines),inspect.stack()[0][3],url)
+            raise CamController.CamControllerError("".join(lines),inspect.stack()[1][3],self.ip_address)
 
         return self.__parseLines(lines)
         
