@@ -1,11 +1,11 @@
-import urllib
+import urllib2
 import inspect
 import CamController
 
-urllib.FancyURLopener.prompt_user_passwd = lambda *a, **k: (None, None) # Disable urlopen's password prompt (Dumb!)
+#urllib.FancyURLopener.prompt_user_passwd = lambda *a, **k: (None, None) # Disable urlopen's password prompt (Dumb!)
 
 class MJPGCamController(CamController.CamController):
-    def __init__(self,maker,model,ip_address,port,user,password,alarm):
+    def __init__(self,maker,model,ip_address,port,user,password,alarm, max_retries):
         self.maker=maker
         self.model=model
         self.ip_address=ip_address
@@ -13,6 +13,7 @@ class MJPGCamController(CamController.CamController):
         self.user=user
         self.password=password
         self.alarm=alarm
+        self.max_retries=max_retries
         self.base_url="http://" + self.ip_address + ":" + self.port + "/"
         
         if not self.isAdmin():
@@ -26,7 +27,7 @@ class MJPGCamController(CamController.CamController):
                     ('FOSCAM',"FI8904W"),('FOSCAM',"FI8905W"),('FOSCAM',"FI8905E"),('FOSCAM',"FI8908W"),('FOSCAM',"FI8916W")]
 
     def isAdmin(self):
-        url= self.base_url + "check_user.cgi?user=" + urllib.quote(self.user) + "&pwd=" + urllib.quote(self.password)
+        url= self.base_url + "check_user.cgi?user=" + urllib2.quote(self.user) + "&pwd=" + urllib2.quote(self.password)
         return int(self.__sendURL(url)['pri'])==3
          
     def getCamName(self):
@@ -39,11 +40,11 @@ class MJPGCamController(CamController.CamController):
         return bool(int(self.__getParams()['alarm_upload_interval']))
 
     def testMail(self):
-        url= self.base_url + "test_mail.cgi?user=" + urllib.quote(self.user) + "&pwd=" + urllib.quote(self.password)
+        url= self.base_url + "test_mail.cgi?user=" + urllib2.quote(self.user) + "&pwd=" + urllib2.quote(self.password)
         return int(self.__sendURL(url)['result'])
             
     def testFTP(self):
-        url= self.base_url + "test_ftp.cgi?user=" + urllib.quote(self.user) + "&pwd=" + urllib.quote(self.password)
+        url= self.base_url + "test_ftp.cgi?user=" + urllib2.quote(self.user) + "&pwd=" + urllib2.quote(self.password)
         return int(self.__sendURL(url)['result'])
 
     def isAlarmEnabled(self):
@@ -56,16 +57,16 @@ class MJPGCamController(CamController.CamController):
         return self.__setMotionAlarm(0)
         
     def __getStatus(self):
-        url=self.base_url + "get_status.cgi?user=" + urllib.quote(self.user) + "&pwd=" + urllib.quote(self.password)
+        url=self.base_url + "get_status.cgi?user=" + urllib2.quote(self.user) + "&pwd=" + urllib2.quote(self.password)
         return self.__sendURL(url)
     
     def __getParams(self):
-        url= self.base_url + "get_params.cgi?user=" + urllib.quote(self.user) + "&pwd=" + urllib.quote(self.password)
+        url= self.base_url + "get_params.cgi?user=" + urllib2.quote(self.user) + "&pwd=" + urllib2.quote(self.password)
         return self.__sendURL(url)
 
     def __setMotionAlarm(self,status):
-        url=self.base_url + "set_alarm.cgi?motion_armed="+`status`+"&user=" + urllib.quote(self.user) + "&pwd=" + urllib.quote(self.password)
-        result=urllib.urlopen(url).read()
+        url=self.base_url + "set_alarm.cgi?motion_armed="+`status`+"&user=" + urllib2.quote(self.user) + "&pwd=" + urllib2.quote(self.password)
+        result=urllib2.urlopen(url).read()
         result=result.strip()
         if result != "ok.":
             raise CamController.CamControllerError(result,inspect.stack()[0][3],self.ip_address)
@@ -74,9 +75,9 @@ class MJPGCamController(CamController.CamController):
     def __sendURL(self,url):
         tries =0
         success = False
-        while tries<=CamController.MAX_RETRIES:
+        while tries<=self.max_retries:
             try:
-                f=urllib.urlopen(url)
+                f=urllib2.urlopen(url)
             except IOError as e:
                 tries += 1
                 continue
