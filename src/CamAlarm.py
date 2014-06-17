@@ -74,7 +74,7 @@ if __name__ == "__main__":
     alarmChecker = AlarmDotComEmail(alarm_user,alarm_password,alarm_log_file)
 
     alarm_state = alarmChecker.getCurAlarmState()
-    alarm_state = "DISARMED"
+    #alarm_state = "DISARMED"
     
     last_tests = read_last_ts(cams)
     current_hour = hrs_since_epoch()
