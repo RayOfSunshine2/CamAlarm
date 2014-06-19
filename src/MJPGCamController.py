@@ -90,10 +90,13 @@ class MJPGCamController(CamController.CamController):
         if f.getcode()!=200:
             raise CamController.CamControllerError("Bad HTTP Response from Camera",f.getcode(),inspect.stack()[1][3],self.ip_address)
 
-        lines=[]
-        for line in f:            
-            lines.append(line.strip())
-        f.close()
+        try:
+            lines=[]
+            for line in f:            
+                lines.append(line.strip())
+            f.close()
+        except IOError as e:
+            raise CamController.CamControllerError(e.args,inspect.stack()[1][3],self.ip_address)
         
         if lines[0].find("var") < 0:
             raise CamController.CamControllerError("".join(lines),inspect.stack()[1][3],self.ip_address)
