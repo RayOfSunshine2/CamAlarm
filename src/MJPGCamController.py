@@ -95,14 +95,14 @@ class MJPGCamController(CamController.CamController):
         while tries<=self.max_retries:
             try:
                 lines = f.readlines()
-            except IOError:
+            except IOError as e:
                 tries += 1
                 continue
             success=True
             break
         
         if not success:
-            raise CamController.CamControllerError("IO Failure during read",inspect.stack()[1][3],self.ip_address)
+            raise CamController.CamControllerError(e.args,inspect.stack()[1][3],self.ip_address)
         
         if lines[0].find("var") < 0:
             raise CamController.CamControllerError("".join(lines),inspect.stack()[1][3],self.ip_address)
