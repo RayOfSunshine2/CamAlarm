@@ -90,13 +90,19 @@ class MJPGCamController(CamController.CamController):
         if f.getcode()!=200:
             raise CamController.CamControllerError("Bad HTTP Response from Camera",f.getcode(),inspect.stack()[1][3],self.ip_address)
 
-        try:
-            lines=[]
-            for line in f:            
-                lines.append(line.strip())
-            f.close()
-        except IOError as e:
-            raise CamController.CamControllerError(e.args,inspect.stack()[1][3],self.ip_address)
+        lines=[]
+        success = False
+        while tries<=self.max_retries:
+            try:
+                lines = f.readlines()
+            except IOError:
+                tries += 1
+                continue
+            success=True
+            break
+        
+        if not success:
+            raise CamController.CamControllerError("IO Failure during read",inspect.stack()[1][3],self.ip_address)
         
         if lines[0].find("var") < 0:
             raise CamController.CamControllerError("".join(lines),inspect.stack()[1][3],self.ip_address)
@@ -107,6 +113,6 @@ class MJPGCamController(CamController.CamController):
         variables = {}
         for line in lines:
             (key,value) = line.split("=")
-            variables[key[4:].strip()]=value[:-1].strip("'")
+            variables[key[4:].strip()]=value[:-1].rstrip(";").strip("'")
     
         return variables
