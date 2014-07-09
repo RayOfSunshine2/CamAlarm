@@ -95,7 +95,7 @@ class MJPGCamController(CamController.CamController):
         while tries<=self.max_retries:
             try:
                 lines = f.readlines()
-            except IOError as e:
+            except Exception as e:
                 tries += 1
                 continue
             success=True
