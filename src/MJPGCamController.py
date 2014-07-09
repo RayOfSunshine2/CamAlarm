@@ -104,7 +104,7 @@ class MJPGCamController(CamController.CamController):
         if not success:
             raise CamController.CamControllerError(e.args,inspect.stack()[1][3],self.ip_address)
         
-        if lines[0].find("var") < 0:
+        if not lines or lines[0].find("var") < 0:
             raise CamController.CamControllerError("".join(lines),inspect.stack()[1][3],self.ip_address)
 
         return self.__parseLines(lines)
