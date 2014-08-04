@@ -80,7 +80,6 @@ class MJPGCamController(CamController.CamController):
                 break
             except IOError as e:
                 tries += 1
-                print "retry: %s" % (tries)
         else:
             raise CamController.CamControllerError(e.args,inspect.stack()[1][3],self.ip_address)
 
